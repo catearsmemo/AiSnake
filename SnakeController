@@ -1,0 +1,83 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SnakeController : MonoBehaviour
+{
+    // Start is called before the first frame update
+    public GameObject bodyPrefab;//躯干预设
+    public GameObject head;//头的预设
+    public GameObject canavas;//画布的预设
+    private int length;//蛇的长度
+    private Vector3 up = new Vector3(0, 0, 1);
+    private Vector3 down = new Vector3(0, 0, -1);
+    private Vector3 left = new Vector3(-1, 0, 0);
+    private Vector3 right = new Vector3(1, 0, 0);
+    private Vector3 direction;//蛇的方向
+    private float timer;//时间计数器
+    public float threshold;
+    void Start()
+    {
+        length = 3;
+        direction = up;
+        timer = 0;
+        for(int n =0; n<length; n++)
+        {
+            GameObject body = Instantiate(bodyPrefab, transform);
+            body.transform.position = new Vector3(head.transform.position.x, transform.position.y,head.transform.position.z-(n+1));
+            if(n>0)
+            body.GetComponent<GameOver>().canavas = canavas.gameObject;
+        }
+    }
+
+    // Update is called once per frame
+   void Update()
+    {
+        if (canavas.transform.GetChild(0).gameObject.activeSelf == false)//如果按钮没被激活
+        {
+            if (Input.GetKeyDown(KeyCode.W))
+            { 
+                if(!(transform.GetChild(0).position.z>head.transform.position.z))
+                direction = up; 
+            }
+           else if (Input.GetKeyDown(KeyCode.S))
+            {
+                if (!(transform.GetChild(0).position.z < head.transform.position.z))
+                    direction = down; 
+            }
+            else if (Input.GetKeyDown(KeyCode.A))
+            {
+                if (!(transform.GetChild(0).position.x< head.transform.position.x))
+                    direction = left; 
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                if (!(transform.GetChild(0).position.x > head.transform.position.x))
+                   direction = right; 
+            }
+            if (timer > threshold)
+            {
+                for (int n = length - 1; n > 0; n--)
+                {
+                    transform.GetChild(n).transform.position = transform.GetChild(n - 1).transform.position;
+                }
+                transform.GetChild(0).transform.position = head.transform.position;
+                head.transform.position += direction;//头的位置会跟随方向改变
+                timer = 0;
+            }
+            timer += Time.deltaTime;//加上每一帧完成所用时间，构成总时长
+        }
+    }
+    public void GetApple()
+    {
+        GameObject body = Instantiate(bodyPrefab, transform);
+        body.GetComponent<GameOver>().canavas = canavas.gameObject;
+        body.transform.position = transform.GetChild(length - 1).position;
+        length++;
+        if(threshold>0.001f)
+        {
+            threshold -= 0.05f;   
+        }
+        body.GetComponent<GameOver>().canavas = canavas.gameObject;
+    }
+}
